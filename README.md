@@ -2,7 +2,12 @@
 
 An interactive, 9-slide Apple Keynote-style technical presentation on **Feature Matching in Computer Vision: Unlocking Spatial Intelligence Across Multiple Views**.
 
-Delivered by a 3-member presentation team (Member A, Member B, Member C) adhering to Apple Human Interface Guidelines (HIG), Human Resources presentation standards, SF Pro typography, and an uncluttered white canvas aesthetic.
+Delivered by a 3-member presentation team:
+- **Speaker 1**: Pavan Kumar S (Foundations & Detection, Slides 1–3)
+- **Speaker 2**: Keerthana (Descriptors & Matching Algorithms, Slides 4–6)
+- **Speaker 3**: Thanushree (Deep Learning & Applications, Slides 7–9)
+
+Adhering to Apple Human Interface Guidelines (HIG), Human Resources presentation standards, SF Pro typography, and an uncluttered white canvas aesthetic.
 
 ---
 
@@ -14,17 +19,17 @@ Delivered by a 3-member presentation team (Member A, Member B, Member C) adherin
 
 ## Presentation Structure
 
-### Part 1: Foundations & Detection (Speaker 1 &middot; Member A)
+### Part 1: Foundations & Detection (Speaker 1 &middot; Pavan Kumar S)
 - **Slide 1: Title Slide** &mdash; Spatial Intelligence & Multiple-View Geometry: From Fundamental Geometry to AI-Powered Alignment.
 - **Slide 2: Introduction & The Core Problem** &mdash; 3D spatial correspondences, perspective shearing, illumination shifts, scale variances, and the canonical 4-stage pipeline.
 - **Slide 3: Feature Detection (Keypoint Extraction)** &mdash; Corners (Harris / Shi-Tomasi), Blobs (DoG / Hessian scale space), and FAST Bresenham circular segment thresholding.
 
-### Part 2: Descriptors & Matching Algorithms (Speaker 2 &middot; Member B)
+### Part 2: Descriptors & Matching Algorithms (Speaker 2 &middot; Keerthana)
 - **Slide 4: Feature Descriptors (Visual Fingerprints)** &mdash; 128-D continuous float vectors (SIFT) vs. 256-bit binary bitstrings (ORB / BRIEF) with hardware POPCNT acceleration.
 - **Slide 5: Matching Mechanics & Distance Metrics** &mdash; Euclidean $L_2$ vs. Hamming distance, Brute-Force vs. FLANN randomized KD-trees, and David Lowe's Ratio Test ($d_1 / d_2 \le 0.75$).
 - **Slide 6: Outlier Rejection & Geometrical Verification** &mdash; RANSAC iterative consensus loop, Homography planar transformations ($x' \sim Hx$), and Fundamental/Essential epipolar geometry ($x'^T F x = 0$).
 
-### Part 3: Deep Learning, Applications & Future Directions (Speaker 3 &middot; Member C)
+### Part 3: Deep Learning, Applications & Future Directions (Speaker 3 &middot; Thanushree)
 - **Slide 7: Modern Era &mdash; Learned Matching Architectures** &mdash; SuperPoint joint convolutional extraction (detector + descriptor heads) and SuperGlue attentional GNN with Sinkhorn optimal transport.
 - **Slide 8: Algorithm Selection & Benchmark Guide** &mdash; Comprehensive latency, scale robustness, and hardware budget decision matrix (SIFT vs. ORB vs. SuperPoint/SuperGlue).
 - **Slide 9: Real-World Applications & Conclusion** &mdash; 4-quadrant overview: Panoramic Image Stitching, Visual SLAM for robotics, 3D Structure from Motion (SfM) Digital Twins, and Augmented Reality spatial anchors.
