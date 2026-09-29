@@ -13,6 +13,7 @@ Adhering to Apple Human Interface Guidelines (HIG), Human Resources presentation
 
 ## Live Presentation
 - **Live Interactive Presentation**: [https://hrlpavan.github.io/feature-matching-presentation/](https://hrlpavan.github.io/feature-matching-presentation/)
+- **Download Full PDF Deck**: [Feature_Matching_In_Computer_Vision_Presentation.pdf](Feature_Matching_In_Computer_Vision_Presentation.pdf)
 - **Official Company Portal**: [https://hrlpavan.github.io/hrl-international-website-/](https://hrlpavan.github.io/hrl-international-website-/)
 
 ---
