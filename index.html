@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Matching in Computer Vision - Technical Presentation</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @font-face {
+      font-family: 'SF Pro Display';
+      font-weight: 400;
+      src: local('-apple-system'), local('BlinkMacSystemFont'), local('SF Pro Display');
+    }
+    :root {
+      --bg-canvas: #FBFBFD;
+      --surface-white: #FFFFFF;
+      --surface-subtle: #F5F5F7;
+      --border-hairline: rgba(0, 0, 0, 0.08);
+      --border-hover: rgba(5, 150, 105, 0.35);
+      --text-main: #1D1D1F;
+      --text-body: #515154;
+      --text-muted: #86868B;
+      --accent-emerald: #059669;
+      --accent-emerald-subtle: #ECFDF5;
+      --accent-slate: #1E293B;
+    }
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .slide-canvas {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-width: 1360px;
+    }
+    .apple-card {
+      background: var(--surface-white);
+      border: 1px solid var(--border-hairline);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .apple-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 10px 25px -4px rgba(5, 150, 105, 0.06), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+    }
+    .pill-badge {
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+    .speaker-pill {
+      background: #ECFDF5;
+      color: #047857;
+      border: 1px solid #A7F3D0;
+    }
+    .formula-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-6 lg:p-8 selection:bg-emerald-100 selection:text-emerald-900">
+
+  <!-- Apple Minimalist Top Header -->
+  <header class="w-full max-w-[1360px] mx-auto flex items-center justify-between pb-3.5 border-b border-black/[0.06] mb-3">
+    <div class="flex items-center space-x-3">
+      <div class="w-2 h-2 rounded-full bg-emerald-600 ring-4 ring-emerald-100"></div>
+      <span class="text-xs uppercase tracking-widest text-[#86868B] font-semibold">Computer Vision Research &middot; Technical Seminar</span>
+    </div>
+    
+    <div class="flex items-center space-x-6 text-xs text-[#6E6E73]">
+      <div class="flex items-center gap-1.5">
+        <span class="text-[#86868B] font-mono">PRESENTER</span>
+        <span id="currentSpeakerTag" class="text-emerald-700 font-semibold">Speaker 1 &middot; Member A</span>
+      </div>
+      <div class="h-3 w-px bg-black/[0.08]"></div>
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[#1D1D1F] font-semibold" id="slideCounter">01 / 09</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Presentation Viewport (16:9 Aspect Ratio) -->
+  <main class="w-full flex-1 flex items-center justify-center">
+    <div id="slideViewport" class="slide-canvas bg-white rounded-2xl shadow-[0_12px_44px_-8px_rgba(0,0,0,0.06)] relative overflow-hidden flex flex-col p-8 md:p-12 border border-black/[0.07]">
+      
+      <!-- SLIDE 1: Title Slide (Speaker 1) -->
+      <div id="slide-1" class="slide-content h-full flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <span class="pill-badge speaker-pill">
+            Part 1: Foundations &middot; Speaker 1 (Member A)
+          </span>
+          <span class="font-mono text-xs text-[#86868B]">CV-SPEC-2026-FMT</span>
+        </div>
+
+        <div class="my-auto max-w-4xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 mb-5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            Spatial Intelligence &amp; Multiple-View Geometry
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#1D1D1F] leading-[1.12]">
+            Feature Matching in <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-slate-900">Computer Vision</span>
+          </h1>
+          
+          <p class="text-lg md:text-xl text-[#515154] font-normal max-w-2xl leading-relaxed mt-5">
+            Unlocking Spatial Intelligence Across Multiple Views: From Fundamental Geometry to AI-Powered Feature Alignment.
+          </p>
+        </div>
+
+        <div class="pt-6 border-t border-black/[0.06] flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div class="grid grid-cols-3 gap-8 text-sm">
+            <div>
+              <span class="block text-[11px] font-semibold text-[#86868B] uppercase tracking-wider">Speaker 1</span>
+              <span class="font-semibold text-[#1D1D1F]">Member A</span>
+              <span class="block text-xs text-[#6E6E73] mt-0.5">Foundations &amp; Detection</span>
+            </div>
+            <div>
+              <span class="block text-[11px] font-semibold text-[#86868B] uppercase tracking-wider">Speaker 2</span>
+              <span class="font-semibold text-[#1D1D1F]">Member B</span>
+              <span class="block text-xs text-[#6E6E73] mt-0.5">Descriptors &amp; Matching</span>
+            </div>
+            <div>
+              <span class="block text-[11px] font-semibold text-[#86868B] uppercase tracking-wider">Speaker 3</span>
+              <span class="font-semibold text-[#1D1D1F]">Member C</span>
+              <span class="block text-xs text-[#6E6E73] mt-0.5">Learned Models &amp; SfM</span>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 text-xs font-mono text-[#6E6E73]">
+            <span class="px-2.5 py-1 rounded-md bg-[#F5F5F7] border border-black/[0.06]">9 Slides</span>
+            <span class="px-2.5 py-1 rounded-md bg-[#F5F5F7] border border-black/[0.06]">Triad Team Delivery</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: Introduction & The Core Problem (Speaker 1) -->
+      <div id="slide-2" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Part 1 &middot; Foundation</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">What is Feature Matching?</h2>
+            <p class="text-sm text-[#6E6E73]">The primary mechanism for establishing spatial correspondences across separate vantage points</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 1 &middot; Member A</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+          <!-- Left: Definition & Objective -->
+          <div class="apple-card rounded-xl p-7 flex flex-col justify-between">
+            <div class="space-y-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-emerald-700 font-semibold">Core Objective</span>
+              <h3 class="text-lg font-bold text-[#1D1D1F]">Establishing Mathematical Ground Truth</h3>
+              <p class="text-sm text-[#515154] leading-relaxed">
+                To identify and establish reliable spatial correspondences between identical physical surface points depicted across disparate viewpoints, sensor modalities, time offsets, and illumination conditions.
+              </p>
+              
+              <div class="p-4 rounded-lg bg-[#F5F5F7] border border-black/[0.05] text-xs text-[#334155] space-y-1">
+                <span class="font-semibold text-emerald-800 block">Geometric Formulation:</span>
+                Given point <span class="font-mono text-[#1D1D1F] font-semibold">x &isin; I<sub>1</sub></span>, determine corresponding point <span class="font-mono text-[#1D1D1F] font-semibold">x' &isin; I<sub>2</sub></span> such that both image coordinates originate from identical 3D world coordinate <span class="font-mono text-[#1D1D1F] font-semibold">X &isin; &reals;<sup>3</sup></span>.
+              </div>
+            </div>
+            
+            <div class="pt-4 border-t border-black/[0.06] text-xs text-[#86868B]">
+              Foundational for: Visual Odometry, Structure from Motion, and 3D Perception.
+            </div>
+          </div>
+
+          <!-- Right: Visual Challenges -->
+          <div class="apple-card rounded-xl p-7 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-700 font-semibold">Environmental Obstacles</span>
+              <h3 class="text-lg font-bold text-[#1D1D1F] mt-1 mb-4">Three Inherent Vision Challenges</h3>
+              
+              <div class="space-y-3">
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05] flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-md bg-white border border-black/[0.08] text-xs font-bold text-[#1D1D1F] flex items-center justify-center shrink-0">1</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-[#1D1D1F]">Perspective &amp; Affine Distortions</h4>
+                    <p class="text-xs text-[#6E6E73] mt-0.5">Camera rotation and translation generate severe non-linear surface foreshortening.</p>
+                  </div>
+                </div>
+
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05] flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-md bg-white border border-black/[0.08] text-xs font-bold text-[#1D1D1F] flex items-center justify-center shrink-0">2</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-[#1D1D1F]">Illumination &amp; Photometric Shifts</h4>
+                    <p class="text-xs text-[#6E6E73] mt-0.5">Diurnal solar shifts, specular reflection, and varying sensor exposure ranges.</p>
+                  </div>
+                </div>
+
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05] flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-md bg-white border border-black/[0.08] text-xs font-bold text-[#1D1D1F] flex items-center justify-center shrink-0">3</span>
+                  <div>
+                    <h4 class="text-xs font-semibold text-[#1D1D1F]">Scale Variations &amp; Dynamic Occlusions</h4>
+                    <p class="text-xs text-[#6E6E73] mt-0.5">Target distance disparities alter resolution; transient foreground obstacles block sightlines.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4-Stage Horizontal Pipeline Strip -->
+        <div class="p-3.5 rounded-xl bg-[#F5F5F7] border border-black/[0.06] flex items-center justify-between text-xs">
+          <span class="text-[#86868B] font-semibold uppercase tracking-wider">Canonical 4-Stage Pipeline:</span>
+          <div class="flex items-center gap-3 font-mono font-medium">
+            <span class="px-3 py-1 rounded bg-white text-emerald-800 border border-emerald-300 font-semibold shadow-xs">1. Detection</span>
+            <span class="text-[#CBD5E1]">&rarr;</span>
+            <span class="px-3 py-1 rounded bg-white text-[#1D1D1F] border border-black/[0.08] shadow-xs">2. Description</span>
+            <span class="text-[#CBD5E1]">&rarr;</span>
+            <span class="px-3 py-1 rounded bg-white text-[#1D1D1F] border border-black/[0.08] shadow-xs">3. Matching</span>
+            <span class="text-[#CBD5E1]">&rarr;</span>
+            <span class="px-3 py-1 rounded bg-white text-[#1D1D1F] border border-black/[0.08] shadow-xs">4. Outlier Rejection</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: Feature Detection (Keypoint Extraction) (Speaker 1) -->
+      <div id="slide-3" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Stage 1 &middot; Keypoint Extraction</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Detecting Interest Points</h2>
+            <p class="text-sm text-[#6E6E73]">Extracting distinct, spatially repeatable anchors across multi-scale image spaces</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 1 &middot; Member A</span>
+        </div>
+
+        <!-- 3-Column Comparative Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
+          <!-- Col 1: Corners -->
+          <div class="apple-card rounded-xl p-6 flex flex-col justify-between border-t-2 border-t-emerald-600">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-mono uppercase tracking-wider text-emerald-700 font-semibold">Corner Detectors</span>
+                <span class="px-2 py-0.5 rounded text-[11px] bg-[#F5F5F7] text-[#515154] font-mono">Harris / Shi-Tomasi</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1D1D1F] mb-2">Multidirectional Shift</h3>
+              <p class="text-xs text-[#515154] leading-relaxed mb-4">
+                Identifies points where image gradient variation is substantial across two orthogonal directions simultaneously.
+              </p>
+              <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.06] space-y-1 text-xs">
+                <div class="text-[#86868B] font-mono text-[11px]">Second Moment Matrix M:</div>
+                <div class="font-mono text-emerald-800 text-center py-1 font-semibold">R = det(M) - k(trace(M))<sup>2</sup></div>
+                <p class="text-[11px] text-[#6E6E73]">Eigenvalues (&lambda;<sub>1</sub>, &lambda;<sub>2</sub>) must both be large and positive.</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-black/[0.06] text-[11px] text-[#86868B]">
+              Optimal for: High-contrast rectilinear architectural scenes.
+            </div>
+          </div>
+
+          <!-- Col 2: Blobs -->
+          <div class="apple-card rounded-xl p-6 flex flex-col justify-between border-t-2 border-t-slate-700">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-mono uppercase tracking-wider text-slate-800 font-semibold">Blob Detectors</span>
+                <span class="px-2 py-0.5 rounded text-[11px] bg-[#F5F5F7] text-[#515154] font-mono">DoG / Hessian</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1D1D1F] mb-2">Scale-Space Extrema</h3>
+              <p class="text-xs text-[#515154] leading-relaxed mb-4">
+                Isolates uniform brightness patches by evaluating difference-of-Gaussians across continuous scale octaves.
+              </p>
+              <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.06] space-y-1 text-xs">
+                <div class="text-[#86868B] font-mono text-[11px]">Gaussian Scale Space:</div>
+                <div class="font-mono text-slate-900 text-center py-1 font-semibold">D(x, y, &sigma;) = (G(k&sigma;) - G(&sigma;)) * I</div>
+                <p class="text-[11px] text-[#6E6E73]">Scale invariance achieved through 3D continuous extrema testing.</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-black/[0.06] text-[11px] text-[#86868B]">
+              Optimal for: Multi-scale satellite and aerial registration.
+            </div>
+          </div>
+
+          <!-- Col 3: FAST -->
+          <div class="apple-card rounded-xl p-6 flex flex-col justify-between border-t-2 border-t-teal-600">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-mono uppercase tracking-wider text-teal-800 font-semibold">Real-Time Pointing</span>
+                <span class="px-2 py-0.5 rounded text-[11px] bg-[#F5F5F7] text-[#515154] font-mono">FAST Algorithm</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1D1D1F] mb-2">Segment Test Heuristic</h3>
+              <p class="text-xs text-[#515154] leading-relaxed mb-4">
+                Inspects a circular Bresenham ring of 16 pixels surrounding the candidate nucleus with decision-tree pruning.
+              </p>
+              <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.06] space-y-1 text-xs">
+                <div class="text-[#86868B] font-mono text-[11px]">Threshold Condition:</div>
+                <div class="font-mono text-teal-900 text-center py-1 font-semibold">N &ge; 9 contiguous pixels &gt; I<sub>p</sub> + &epsilon;</div>
+                <p class="text-[11px] text-[#6E6E73]">Rejects untextured image regions in &lt; 2 ms per frame.</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-black/[0.06] text-[11px] text-[#86868B]">
+              Optimal for: Embedded robotics and real-time Visual SLAM.
+            </div>
+          </div>
+        </div>
+
+        <!-- Highlight Axiom Box -->
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+            <span class="text-emerald-900 font-medium">Core Axiom: Keypoints must remain repeatable regardless of 3D camera translation, yaw, pitch, roll, or focal zoom.</span>
+          </div>
+          <span class="text-emerald-800 font-mono text-[11px] font-semibold">Repeatability Rate Target &gt; 85%</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: Feature Descriptors (Speaker 2) -->
+      <div id="slide-4" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Stage 2 &middot; Representation</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Building Feature Descriptors</h2>
+            <p class="text-sm text-[#6E6E73]">Converting local spatial neighborhoods into robust, invariant mathematical fingerprints</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 2 &middot; Member B</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+          <!-- Floating-Point Card -->
+          <div class="apple-card rounded-xl p-7 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="pill-badge bg-slate-100 text-slate-800 border border-slate-300">Continuous Vector</span>
+                <span class="font-mono text-xs text-[#86868B]">128-D Float32</span>
+              </div>
+              <h3 class="text-xl font-bold text-[#1D1D1F] mb-2">Floating-Point Descriptors (SIFT / SURF)</h3>
+              <p class="text-xs text-[#515154] leading-relaxed mb-4">
+                Constructs localized gradient orientation histograms computed over a canonical 16&times;16 pixel grid centered on the detected interest point.
+              </p>
+
+              <div class="space-y-3">
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05] text-xs">
+                  <span class="font-semibold text-[#1D1D1F] block mb-1">SIFT Vector Construction:</span>
+                  <p class="text-[#515154]">16 sub-regions (4&times;4) &times; 8 orientation bins = <strong>128 floating-point values</strong>. Normalized with L2 norm to suppress illumination gain.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                  <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                    <span class="text-[#86868B] block text-[10px] uppercase font-mono">Strengths</span>
+                    <span class="text-[#1D1D1F] font-semibold">Scale &amp; Rotation Invariant</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                    <span class="text-[#86868B] block text-[10px] uppercase font-mono">Trade-off</span>
+                    <span class="text-amber-800 font-semibold">Heavy Memory &amp; CPU Cost</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-5 pt-3 border-t border-black/[0.06] text-xs text-[#86868B]">
+              Primary Application: High-accuracy photogrammetry and geospatial mapping.
+            </div>
+          </div>
+
+          <!-- Binary Card -->
+          <div class="apple-card rounded-xl p-7 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="pill-badge bg-emerald-50 text-emerald-800 border border-emerald-300">Binary Bitstring</span>
+                <span class="font-mono text-xs text-[#86868B]">256-Bit Bitstring</span>
+              </div>
+              <h3 class="text-xl font-bold text-[#1D1D1F] mb-2">Binary Descriptors (ORB / BRIEF / BRISK)</h3>
+              <p class="text-xs text-[#515154] leading-relaxed mb-4">
+                Encodes relative pairwise pixel intensity tests into compact bit strings, steered by the intensity centroid to achieve rotation invariance.
+              </p>
+
+              <div class="space-y-3">
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05] text-xs">
+                  <span class="font-semibold text-[#1D1D1F] block mb-1">Point Comparison Function &tau;:</span>
+                  <div class="font-mono text-emerald-800 font-semibold py-0.5">&tau;(p; x, y) = 1 if I(p(x)) &lt; I(p(y)), else 0</div>
+                  <p class="text-[#515154] mt-1">256 tests assembled directly into a 32-byte integer array.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                  <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                    <span class="text-[#86868B] block text-[10px] uppercase font-mono">Strengths</span>
+                    <span class="text-emerald-800 font-semibold">Native POPCNT Acceleration</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                    <span class="text-[#86868B] block text-[10px] uppercase font-mono">Trade-off</span>
+                    <span class="text-[#515154] font-semibold">Reduced Scale Dynamics</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-5 pt-3 border-t border-black/[0.06] text-xs text-[#86868B]">
+              Primary Application: Embedded robotics, smartphones, and micro-drones.
+            </div>
+          </div>
+        </div>
+
+        <!-- Footprint Comparison Row -->
+        <div class="p-3.5 rounded-xl bg-[#F5F5F7] border border-black/[0.06] flex items-center justify-between text-xs text-[#515154]">
+          <span class="font-semibold text-[#1D1D1F]">Fingerprint Payload Comparison:</span>
+          <div class="flex items-center gap-6 font-mono text-[11px]">
+            <span>SIFT: <strong class="text-[#1D1D1F]">512 Bytes</strong> per keypoint</span>
+            <span class="text-[#CBD5E1]">&bull;</span>
+            <span>ORB: <strong class="text-emerald-700">32 Bytes</strong> per keypoint (16x Compression)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: Matching Mechanics & Distance Metrics (Speaker 2) -->
+      <div id="slide-5" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Stage 3 &middot; Similarity Search</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Matching Mechanics &amp; Distance Metrics</h2>
+            <p class="text-sm text-[#6E6E73]">Pairwise proximity evaluation and ambiguity pruning in multidimensional metric spaces</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 2 &middot; Member B</span>
+        </div>
+
+        <!-- 3-Block Process Architecture -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
+          <!-- Distance Metrics -->
+          <div class="apple-card rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-700 font-semibold block mb-2">Metrics</span>
+              <h3 class="text-base font-bold text-[#1D1D1F] mb-2">Distance Metrics</h3>
+              <p class="text-xs text-[#515154] mb-3">Determined strictly by descriptor vector representation:</p>
+              
+              <div class="space-y-2 text-xs">
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-[#1D1D1F] font-mono font-semibold">Euclidean (L2 Norm)</div>
+                  <p class="text-[#6E6E73] text-[11px] mt-0.5">Applied to Float vectors (SIFT). Computes vector difference in &reals;<sup>128</sup>.</p>
+                </div>
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-emerald-800 font-mono font-semibold">Hamming Distance</div>
+                  <p class="text-[#6E6E73] text-[11px] mt-0.5">Bitwise XOR followed by population count (POPCNT). 1 CPU instruction.</p>
+                </div>
+              </div>
+            </div>
+            <div class="text-[11px] text-[#86868B] pt-3 border-t border-black/[0.06]">
+              Metrics must strictly satisfy the triangle inequality.
+            </div>
+          </div>
+
+          <!-- Search Algorithms -->
+          <div class="apple-card rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-700 font-semibold block mb-2">Index Engine</span>
+              <h3 class="text-base font-bold text-[#1D1D1F] mb-2">Search Strategies</h3>
+              <p class="text-xs text-[#515154] mb-3">Algorithmic nearest neighbor resolution:</p>
+              
+              <div class="space-y-2 text-xs">
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-[#1D1D1F] font-semibold">Brute-Force Matcher</div>
+                  <p class="text-[#6E6E73] text-[11px] mt-0.5">Exhaustive O(N&times;M) comparison. Guaranteed global optimum, high compute cost.</p>
+                </div>
+                <div class="p-3 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-[#1D1D1F] font-semibold">FLANN Tree Search</div>
+                  <p class="text-[#6E6E73] text-[11px] mt-0.5">Randomized KD-Trees &amp; hierarchical k-means for approximate nearest neighbors in O(log N).</p>
+                </div>
+              </div>
+            </div>
+            <div class="text-[11px] text-[#86868B] pt-3 border-t border-black/[0.06]">
+              FLANN offers ~10&times; acceleration on dense datasets.
+            </div>
+          </div>
+
+          <!-- Lowe's Ratio Test -->
+          <div class="apple-card rounded-xl p-6 flex flex-col justify-between border-t-2 border-t-emerald-600">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-emerald-800 font-semibold block mb-2">Ambiguity Filter</span>
+              <h3 class="text-base font-bold text-[#1D1D1F] mb-2">Lowe's Ratio Test</h3>
+              <p class="text-xs text-[#515154] mb-3">Pruning repetitive textures &amp; perceptual ambiguity:</p>
+              
+              <div class="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-center mb-3">
+                <span class="text-[10px] uppercase font-mono tracking-wider text-emerald-800 block mb-1 font-semibold">Pruning Criterion</span>
+                <span class="font-mono text-sm text-emerald-950 font-bold">Ratio = ( d<sub>1</sub> / d<sub>2</sub> ) &le; 0.75</span>
+              </div>
+              <p class="text-[11px] text-[#515154] leading-relaxed">
+                If the closest match (d<sub>1</sub>) is not substantially closer than the second closest match (d<sub>2</sub>), the match is discarded as an ambiguous repetitive texture.
+              </p>
+            </div>
+            <div class="text-[11px] text-emerald-800 font-semibold pt-3 border-t border-black/[0.06]">
+              Eliminates &gt; 90% of false matches immediately.
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#F5F5F7] border border-black/[0.06] flex items-center justify-between text-xs text-[#6E6E73] font-mono">
+          <span>PIPELINE VELOCITY</span>
+          <span class="text-emerald-800 font-semibold">Hamming / POPCNT: 0.12 ms &middot; SIFT FLANN: 4.8 ms (1,000 Keypoints)</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: Outlier Rejection & Geometrical Verification (Speaker 2) -->
+      <div id="slide-6" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Stage 4 &middot; Robust Estimation</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Outlier Rejection &amp; Geometrical Verification</h2>
+            <p class="text-sm text-[#6E6E73]">Eliminating spurious correspondences through spatial constraints and consensus fitting</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 2 &middot; Member B</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 my-auto items-stretch">
+          <!-- Left: Pre-Filtering State -->
+          <div class="md:col-span-4 apple-card rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-rose-700 font-semibold block mb-2">Pre-Filtering State</span>
+              <h3 class="text-base font-bold text-[#1D1D1F] mb-2">High Outlier Contamination</h3>
+              <p class="text-xs text-[#515154] leading-relaxed mb-4">
+                Raw nearest neighbor matching produces massive noise caused by dynamic scene objects, repetitive patterns, and optical sensor noise.
+              </p>
+              
+              <div class="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-xs space-y-2">
+                <div class="flex justify-between text-[#1D1D1F]">
+                  <span>Typical Inlier Ratio:</span>
+                  <span class="font-mono font-bold text-slate-800">15% &ndash; 35%</span>
+                </div>
+                <div class="flex justify-between text-rose-800">
+                  <span>Outlier Contamination:</span>
+                  <span class="font-mono font-bold">65% &ndash; 85%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-black/[0.06] text-[11px] text-[#86868B]">
+              Unfiltered matches lead to catastrophic 3D pose failure.
+            </div>
+          </div>
+
+          <!-- Right: RANSAC Loop & Models -->
+          <div class="md:col-span-8 apple-card rounded-xl p-6 flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="pill-badge bg-emerald-50 text-emerald-800 border border-emerald-300">Iterative Consensus</span>
+                <span class="font-mono text-xs text-[#86868B]">RANSAC Algorithm Loop</span>
+              </div>
+              
+              <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                <div class="p-2.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-emerald-800 font-mono font-bold mb-1">Step 1</div>
+                  <div class="text-[11px] text-[#515154]">Sample minimal subset (4 or 8 pts)</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-emerald-800 font-mono font-bold mb-1">Step 2</div>
+                  <div class="text-[11px] text-[#515154]">Hypothesize geometric model matrix</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-emerald-800 font-mono font-bold mb-1">Step 3</div>
+                  <div class="text-[11px] text-[#515154]">Count inliers within error threshold &epsilon;</div>
+                </div>
+                <div class="p-2.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-emerald-800 font-mono font-bold mb-1">Step 4</div>
+                  <div class="text-[11px] text-[#515154]">Refine model over maximum consensus set</div>
+                </div>
+              </div>
+
+              <!-- Geometric Models -->
+              <div class="grid grid-cols-2 gap-4 pt-1">
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-xs font-semibold text-slate-900 font-mono mb-1">Homography Matrix (H &isin; &reals;<sup>3&times;3</sup>)</div>
+                  <p class="text-xs text-[#515154]">For strictly planar scenes or pure camera rotation. Requires 4 point correspondences.</p>
+                  <div class="font-mono text-[11px] text-[#86868B] mt-1.5">x' &sim; H x</div>
+                </div>
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <div class="text-xs font-semibold text-emerald-800 font-mono mb-1">Fundamental / Essential (F, E)</div>
+                  <p class="text-xs text-[#515154]">Enforces epipolar geometry for unconstrained 3D camera translation. Requires 8 points.</p>
+                  <div class="font-mono text-[11px] text-[#86868B] mt-1.5">x'<sup>T</sup> F x = 0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stat Callout Banner -->
+            <div class="mt-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+              <span class="text-emerald-950 font-medium">Guaranteed Filtering Efficacy:</span>
+              <span class="text-emerald-800 font-mono font-bold">Filters up to 80%+ raw false positives into sub-pixel accurate spatial alignments</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-[#F5F5F7] border border-black/[0.06] flex items-center justify-between text-xs text-[#6E6E73] font-mono">
+          <span>GEOMETRIC INTEGRITY</span>
+          <span class="text-[#1D1D1F]">MAGSAC++ / USAC: 2.1 ms median convergence on CPU/GPU</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: Deep Learning & Learned Matchers (Speaker 3) -->
+      <div id="slide-7" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Part 3 &middot; The Modern Era</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Learned Matching Architectures</h2>
+            <p class="text-sm text-[#6E6E73]">Replacing handcrafted heuristics with differentiable graph neural networks and deep priors</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 3 &middot; Member C</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+          <!-- SuperPoint -->
+          <div class="apple-card rounded-xl p-7 flex flex-col justify-between border-t-2 border-t-emerald-600">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-xs text-emerald-800 font-semibold uppercase">Front-End Extractor</span>
+                <span class="px-2 py-0.5 rounded text-[11px] bg-[#F5F5F7] text-[#515154] font-mono">MagicLeap / CVPR</span>
+              </div>
+              <h3 class="text-xl font-bold text-[#1D1D1F]">SuperPoint: Self-Supervised Joint Extraction</h3>
+              <p class="text-xs text-[#515154] leading-relaxed">
+                A fully convolutional network architecture operating on full-sized images to compute interest points and dense descriptors in a single forward pass.
+              </p>
+
+              <div class="space-y-2.5 text-xs">
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <span class="text-[#1D1D1F] font-semibold block mb-0.5">Shared VGG Encoder Backbone</span>
+                  <p class="text-[#6E6E73]">Single shared representation branches into a Keypoint Detector Head (sub-pixel heatmap) and Dense Descriptor Head (semi-dense 256-D vectors).</p>
+                </div>
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <span class="text-[#1D1D1F] font-semibold block mb-0.5">Homographic Adaptation</span>
+                  <p class="text-[#6E6E73]">Self-supervised multi-scale warping pipeline completely eliminates reliance on human keypoint labeling.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-black/[0.06] text-xs text-emerald-800 font-medium">
+              Output: Highly repeatable keypoints under extreme blur and lighting swings.
+            </div>
+          </div>
+
+          <!-- SuperGlue -->
+          <div class="apple-card rounded-xl p-7 flex flex-col justify-between border-t-2 border-t-slate-700">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-xs text-slate-800 font-semibold uppercase">Graph Matcher &middot; GNN</span>
+                <span class="px-2 py-0.5 rounded text-[11px] bg-[#F5F5F7] text-[#515154] font-mono">Attentional GNN / CVPR</span>
+              </div>
+              <h3 class="text-xl font-bold text-[#1D1D1F]">SuperGlue: Attentional Graph Matching</h3>
+              <p class="text-xs text-[#515154] leading-relaxed">
+                Solves data association and outlier rejection simultaneously using a Graph Neural Network with Self- and Cross-Attention layers.
+              </p>
+
+              <div class="space-y-2.5 text-xs">
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <span class="text-[#1D1D1F] font-semibold block mb-0.5">Self &amp; Cross Attention Layers</span>
+                  <p class="text-[#6E6E73]">Self-attention propagates spatial context within the same image; cross-attention exchanges visual semantics across views, mirroring human gaze.</p>
+                </div>
+                <div class="p-3.5 rounded-lg bg-[#F5F5F7] border border-black/[0.05]">
+                  <span class="text-[#1D1D1F] font-semibold block mb-0.5">Optimal Transport (Sinkhorn Algorithm)</span>
+                  <p class="text-[#6E6E73]">Formulates assignment as an optimal transport problem with an explicit dustbin mechanism for unmatched occlusions.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-black/[0.06] text-xs text-slate-800 font-medium">
+              Result: End-to-end differentiable matching without heuristic RANSAC tuning.
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-[#F5F5F7] border border-black/[0.06] flex items-center justify-between text-xs text-[#515154]">
+          <span class="font-semibold text-[#1D1D1F]">Paradigm Shift:</span>
+          <span class="text-emerald-800 font-medium">Replaces manual Euclidean nearest-neighbor indexing with context-aware attention and differentiable gradient descent</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: Comparative Matrix & Performance (Speaker 3) -->
+      <div id="slide-8" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Comparative Analysis &middot; Benchmarks</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Algorithm Selection &amp; Benchmark Guide</h2>
+            <p class="text-sm text-[#6E6E73]">Empirical trade-offs across computational budgets, precision thresholds, and platform hardware</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 3 &middot; Member C</span>
+        </div>
+
+        <!-- High-Contrast Clean Table -->
+        <div class="my-auto overflow-hidden rounded-xl border border-black/[0.08] apple-card">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#F5F5F7] text-[#6E6E73] uppercase font-mono text-[10px] tracking-wider border-b border-black/[0.08]">
+              <tr>
+                <th class="py-3 px-4 font-semibold">Algorithm</th>
+                <th class="py-3 px-4 font-semibold">Vector Type</th>
+                <th class="py-3 px-4 font-semibold">Inference Latency</th>
+                <th class="py-3 px-4 font-semibold">Scale Robustness</th>
+                <th class="py-3 px-4 font-semibold">Illumination Invariance</th>
+                <th class="py-3 px-4 font-semibold">Primary Target Application</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-black/[0.06] text-[#1D1D1F]">
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3.5 px-4 font-bold text-[#1D1D1F]">SIFT</td>
+                <td class="py-3.5 px-4 font-mono text-[#515154]">128-D Float32</td>
+                <td class="py-3.5 px-4 font-mono text-amber-700 font-semibold">~70 ms (CPU)</td>
+                <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200">Very High</span></td>
+                <td class="py-3.5 px-4 text-[#515154]">Moderate</td>
+                <td class="py-3.5 px-4 text-[#6E6E73]">High-Precision Geospatial &amp; SfM</td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3.5 px-4 font-bold text-[#1D1D1F]">ORB</td>
+                <td class="py-3.5 px-4 font-mono text-emerald-700 font-semibold">256-bit Binary</td>
+                <td class="py-3.5 px-4 font-mono text-emerald-700 font-bold">&lt; 3 ms (Ultra-Fast)</td>
+                <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-medium">Moderate</span></td>
+                <td class="py-3.5 px-4 text-[#6E6E73]">Low &ndash; Moderate</td>
+                <td class="py-3.5 px-4 text-[#6E6E73]">Embedded SLAM &amp; Edge Robotics</td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition bg-emerald-50/40">
+                <td class="py-3.5 px-4 font-bold text-emerald-900">SuperPoint + SuperGlue</td>
+                <td class="py-3.5 px-4 font-mono text-slate-800 font-semibold">Learned Attention</td>
+                <td class="py-3.5 px-4 font-mono text-emerald-800 font-bold">12 ms (GPU)</td>
+                <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">Extreme</span></td>
+                <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">State-of-the-Art</span></td>
+                <td class="py-3.5 px-4 text-emerald-950 font-medium">Day/Night Autonomy &amp; AR Headsets</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3 Decision Cards -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="p-3.5 rounded-xl bg-[#F5F5F7] border border-black/[0.05] text-xs">
+            <span class="text-[#86868B] font-mono text-[10px] uppercase block font-semibold">Resource Constrained?</span>
+            <span class="font-bold text-[#1D1D1F]">Deploy ORB / FAST</span>
+            <p class="text-[#6E6E73] text-[11px] mt-0.5">Guarantees 30+ FPS on edge ARM architectures.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-[#F5F5F7] border border-black/[0.05] text-xs">
+            <span class="text-[#86868B] font-mono text-[10px] uppercase block font-semibold">Photogrammetry Quality?</span>
+            <span class="font-bold text-[#1D1D1F]">Deploy SIFT + RANSAC</span>
+            <p class="text-[#6E6E73] text-[11px] mt-0.5">Proven metric repeatability across survey scales.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-[#F5F5F7] border border-black/[0.05] text-xs">
+            <span class="text-[#86868B] font-mono text-[10px] uppercase block font-semibold">Challenging Lighting?</span>
+            <span class="font-bold text-emerald-800">Deploy SuperPoint + SuperGlue</span>
+            <p class="text-[#6E6E73] text-[11px] mt-0.5">Resilient to low-texture and low-lux night scenes.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9: Real-World Applications & Conclusion (Speaker 3) -->
+      <div id="slide-9" class="slide-content h-full flex flex-col justify-between hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Applications &middot; Synthesis</span>
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#1D1D1F] mt-1">Real-World Applications &amp; Conclusion</h2>
+            <p class="text-sm text-[#6E6E73]">Empowering spatial intelligence across industries and commercial devices</p>
+          </div>
+          <span class="pill-badge speaker-pill">Speaker 3 &middot; Member C</span>
+        </div>
+
+        <!-- 4 Clean Application Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-auto">
+          <!-- Quadrant 1 -->
+          <div class="apple-card rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-emerald-800 font-semibold block mb-1">01 &middot; Photography</span>
+              <h3 class="text-sm font-bold text-[#1D1D1F] mb-1.5">Image Stitching</h3>
+              <p class="text-xs text-[#515154] leading-relaxed">
+                Computes planar homographies to seamlessly merge multiple overlapping camera frames into high-resolution panoramas without seam artifacts.
+              </p>
+            </div>
+            <div class="text-[10px] text-[#86868B] font-mono pt-3 border-t border-black/[0.06]">
+              Mobile Devices &amp; Satellites
+            </div>
+          </div>
+
+          <!-- Quadrant 2 -->
+          <div class="apple-card rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-slate-800 font-semibold block mb-1">02 &middot; Robotics</span>
+              <h3 class="text-sm font-bold text-[#1D1D1F] mb-1.5">Visual SLAM</h3>
+              <p class="text-xs text-[#515154] leading-relaxed">
+                Simultaneous Localization and Mapping for autonomous vehicles and UAVs, estimating real-time 6-DoF trajectories in GPS-denied environments.
+              </p>
+            </div>
+            <div class="text-[10px] text-[#86868B] font-mono pt-3 border-t border-black/[0.06]">
+              Autonomous Systems
+            </div>
+          </div>
+
+          <!-- Quadrant 3 -->
+          <div class="apple-card rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-teal-800 font-semibold block mb-1">03 &middot; Photogrammetry</span>
+              <h3 class="text-sm font-bold text-[#1D1D1F] mb-1.5">3D Reconstruction</h3>
+              <p class="text-xs text-[#515154] leading-relaxed">
+                Structure from Motion (SfM) pipelines extracting bundle-adjusted keypoints to generate millimeter-scale digital twins of architecture.
+              </p>
+            </div>
+            <div class="text-[10px] text-[#86868B] font-mono pt-3 border-t border-black/[0.06]">
+              Digital Twins &amp; Heritage
+            </div>
+          </div>
+
+          <!-- Quadrant 4 -->
+          <div class="apple-card rounded-xl p-5 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-emerald-800 font-semibold block mb-1">04 &middot; Spatial Computing</span>
+              <h3 class="text-sm font-bold text-[#1D1D1F] mb-1.5">Augmented Reality</h3>
+              <p class="text-xs text-[#515154] leading-relaxed">
+                Locks virtual interactive holographic assets firmly onto physical surfaces via real-time planar tracking and visual relocalization.
+              </p>
+            </div>
+            <div class="text-[10px] text-[#86868B] font-mono pt-3 border-t border-black/[0.06]">
+              AR Glasses &amp; Spatial OS
+            </div>
+          </div>
+        </div>
+
+        <!-- Concluding Takeaway Synthesis Block -->
+        <div class="p-6 rounded-xl bg-[#F5F5F7] border border-black/[0.06] flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-xs uppercase font-mono tracking-wider text-emerald-800 font-bold block">Executive Synthesis</span>
+            <p class="text-base md:text-lg font-bold text-[#1D1D1F]">
+              &ldquo;Feature matching seamlessly bridges 2D camera pixels to 3D physical spatial comprehension.&rdquo;
+            </p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-[#6E6E73] block">Thank you for your attention</span>
+            <span class="text-xs font-mono text-emerald-800 font-semibold">Questions &amp; Discussion</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Apple Minimalist Footer Controls -->
+  <footer class="w-full max-w-[1360px] mx-auto mt-3 pt-3 border-t border-black/[0.06] flex flex-col md:flex-row items-center justify-between gap-4">
+    <!-- Left: Slide Navigation Buttons -->
+    <div class="flex items-center space-x-2">
+      <button id="prevBtn" onclick="navigateSlide(-1)" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-xs font-medium text-[#1D1D1F] border border-black/[0.1] shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        Previous
+      </button>
+      <button id="nextBtn" onclick="navigateSlide(1)" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-medium text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+        Next
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+
+    <!-- Center: Progress Indicator Dots -->
+    <div class="flex items-center space-x-2" id="dotsContainer">
+      <!-- 9 dots rendered via JS -->
+    </div>
+
+    <!-- Right: Speaker Notes & Keyboard Guide -->
+    <div class="flex items-center space-x-3 text-xs">
+      <button onclick="toggleNotes()" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-black/[0.1] text-[#1D1D1F] font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs">
+        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+        Speaker Delivery Script (Press 'N')
+      </button>
+      <button onclick="toggleFullscreen()" class="p-1.5 rounded-lg bg-white hover:bg-slate-50 border border-black/[0.1] text-[#1D1D1F] transition cursor-pointer shadow-xs" title="Fullscreen (F)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Slide-out Speaker Notes Drawer -->
+  <div id="notesDrawer" class="fixed bottom-20 right-8 w-96 bg-white border border-black/[0.12] rounded-xl p-5 shadow-2xl z-50 hidden transition-all duration-200">
+    <div class="flex items-center justify-between pb-3 border-b border-black/[0.06] mb-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+        <span class="text-xs font-semibold uppercase tracking-wider text-emerald-900" id="notesSpeakerLabel">Speaker 1 Delivery Script</span>
+      </div>
+      <button onclick="toggleNotes()" class="text-[#86868B] hover:text-[#1D1D1F] text-xs font-mono">ESC / Close</button>
+    </div>
+    <div class="text-xs text-[#515154] leading-relaxed font-sans" id="notesText">
+      <!-- Notes text injected dynamically -->
+    </div>
+  </div>
+
+  <script>
+    const totalSlides = 9;
+    let currentSlide = 1;
+
+    const speakerMap = {
+      1: { name: "Speaker 1 &middot; Member A", role: "Foundation &amp; Detection", notes: "Welcome everyone. Today, our team will explore how computer vision systems link corresponding visual information across multiple images. We will begin with spatial fundamentals and classical interest point extraction." },
+      2: { name: "Speaker 1 &middot; Member A", role: "Foundation &amp; Detection", notes: "Feature matching enables machines to reconstruct 3D structures and navigate environments by establishing spatial correspondence. Notice how scale, perspective, and illumination pose foundational hurdles that our pipeline must solve." },
+      3: { name: "Speaker 1 &middot; Member A", role: "Foundation &amp; Detection", notes: "Before matching, we must locate distinct points. FAST and Harris detectors ensure these points remain repeatable across frames regardless of zoom or camera pose. Now I will hand over the presentation to Member B for descriptors and matching algorithms." },
+      4: { name: "Speaker 2 &middot; Member B", role: "Descriptors &amp; Matching", notes: "Thank you, Member A. Once keypoints are found, descriptors turn surrounding pixels into unique mathematical fingerprints for fast comparison. We balance the metric fidelity of 128-D SIFT floats with the high-speed 256-bit binary tests of ORB." },
+      5: { name: "Speaker 2 &middot; Member B", role: "Descriptors &amp; Matching", notes: "Matching involves finding nearest neighbors in descriptor space. Notice how Lowe's Ratio Test discards ambiguous matches by enforcing that candidate 1 must be strictly closer than candidate 2 by a factor of 0.75 or better." },
+      6: { name: "Speaker 2 &middot; Member B", role: "Descriptors &amp; Matching", notes: "Even with ratio filtering, raw correspondences harbor false matches. RANSAC isolates noise through iterative geometric consensus, guaranteeing that only geometrically consistent matches survive. I now pass the podium to Member C to discuss deep learning." },
+      7: { name: "Speaker 3 &middot; Member C", role: "Deep Learning &amp; Future", notes: "Thank you, Member B. Deep learning models like SuperPoint and SuperGlue replace hand-crafted rules with end-to-end gradient optimization, excelling in extreme low-texture and nighttime environments where classic algorithms fail." },
+      8: { name: "Speaker 3 &middot; Member C", role: "Deep Learning &amp; Future", notes: "Choosing the right algorithm depends on trade-offs between computational budgets, accuracy, and platform constraints. SIFT for photogrammetry, ORB for micro-robotics, and SuperGlue for complex real-time autonomy." },
+      9: { name: "Speaker 3 &middot; Member C", role: "Deep Learning &amp; Future", notes: "In summary, feature matching drives modern visual AI across robotics, AR, and 3D modeling, seamlessly bridging 2D camera pixels to 3D physical spatial comprehension. Thank you! We are now open for questions." }
+    };
+
+    function initDots() {
+      const container = document.getElementById('dotsContainer');
+      container.innerHTML = '';
+      for (let i = 1; i <= totalSlides; i++) {
+        const dot = document.createElement('button');
+        dot.className = `w-2 h-2 rounded-full transition-all cursor-pointer ${i === currentSlide ? 'w-5 bg-emerald-600 ring-2 ring-emerald-100' : 'bg-slate-300 hover:bg-slate-400'}`;
+        dot.title = `Jump to Slide ${i}`;
+        dot.onclick = () => goToSlide(i);
+        container.appendChild(dot);
+      }
+    }
+
+    function updateSlide() {
+      for (let i = 1; i <= totalSlides; i++) {
+        const el = document.getElementById(`slide-${i}`);
+        if (el) {
+          el.classList.toggle('hidden', i !== currentSlide);
+        }
+      }
+
+      document.getElementById('slideCounter').textContent = `0${currentSlide} / 0${totalSlides}`;
+
+      const speakerData = speakerMap[currentSlide];
+      document.getElementById('currentSpeakerTag').innerHTML = speakerData.name;
+      document.getElementById('notesSpeakerLabel').innerHTML = `${speakerData.name} (${speakerData.role})`;
+      document.getElementById('notesText').textContent = speakerData.notes;
+
+      document.getElementById('prevBtn').disabled = (currentSlide === 1);
+      document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+
+      initDots();
+    }
+
+    function navigateSlide(direction) {
+      const target = currentSlide + direction;
+      if (target >= 1 && target <= totalSlides) {
+        currentSlide = target;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(slideNum) {
+      if (slideNum >= 1 && slideNum <= totalSlides) {
+        currentSlide = slideNum;
+        updateSlide();
+      }
+    }
+
+    function toggleNotes() {
+      const drawer = document.getElementById('notesDrawer');
+      drawer.classList.toggle('hidden');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn("Fullscreen request error:", err);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        navigateSlide(1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        navigateSlide(-1);
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      } else if (e.key === 'Home') {
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        goToSlide(totalSlides);
+      } else if (!isNaN(e.key) && parseInt(e.key) >= 1 && parseInt(e.key) <= 9) {
+        goToSlide(parseInt(e.key));
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>
