@@ -28,7 +28,7 @@
 | :--- | :--- | :--- | :--- |
 | **Speaker 1** | Pavan Kumar S | Foundations, Problem Formulation &amp; Interest Point Detection | Slides 1 &ndash; 3 |
 | **Speaker 2** | Keerthana | Feature Descriptors, Proximity Search &amp; Geometric Filtering | Slides 4 &ndash; 6 |
-| **Speaker 3** | Thanushree | Deep Neural Matchers, Benchmark Matrix &amp; Real-World Applications | Slides 7 &ndash; 9 |
+| **Speaker 3** | Tanushree | Deep Neural Matchers, Benchmark Matrix &amp; Real-World Applications | Slides 7 &ndash; 9 |
 
 ---
 
@@ -53,7 +53,7 @@
   * **Presenters**:
     * Pavan Kumar S: Foundations &amp; Detection (Speaker 1)
     * Keerthana: Descriptors &amp; Matching (Speaker 2)
-    * Thanushree: Learned Models &amp; SfM (Speaker 3)
+    * Tanushree: Learned Models &amp; SfM (Speaker 3)
 * **Speaker Delivery Notes (Pavan Kumar S)**:
   > "Good morning, colleagues and committee members. Today, our team will explore how computer vision systems establish spatial correspondences across disparate images. We begin with geometric foundations and interest point detection, before transitioning to feature descriptors and modern attentional graph networks. Let us examine the fundamental problem feature matching seeks to solve."
 
@@ -181,17 +181,17 @@
     * *Fundamental / Essential Matrix ($F, E$)*: Enforces epipolar geometry for unconstrained 3D stereo motion ($x'^T F x = 0$).
   * **Guaranteed Filtering Efficacy**: Filters up to $80\%+$ raw false positives into sub-pixel accurate spatial alignments.
 * **Speaker Delivery Notes (Keerthana) [Handoff Cue]**:
-  > "Even with ratio filtering, raw correspondences harbor false matches that would cause 3D reconstruction to fail completely. RANSAC solves this by iteratively generating hypotheses from minimal subsets and counting inliers that satisfy epipolar or homographic geometry. Having covered the classical pipeline, I now pass the podium to Thanushree to explore deep learning architectures and real-world deployments."
+  > "Even with ratio filtering, raw correspondences harbor false matches that would cause 3D reconstruction to fail completely. RANSAC solves this by iteratively generating hypotheses from minimal subsets and counting inliers that satisfy epipolar or homographic geometry. Having covered the classical pipeline, I now pass the podium to Tanushree to explore deep learning architectures and real-world deployments."
 
 ---
 
-### PART 3: DEEP LEARNING &amp; APPLICATIONS (Speaker 3: Thanushree)
+### PART 3: DEEP LEARNING &amp; APPLICATIONS (Speaker 3: Tanushree)
 
 ---
 
 #### SLIDE 7: Deep Learning &amp; Learned Matchers
 * **Slide Number**: 07 / 09
-* **Speaker**: Speaker 3 &middot; Thanushree
+* **Speaker**: Speaker 3 &middot; Tanushree
 * **Topic Track**: Part 3 &middot; The Modern Era
 * **Layout**: Side-by-side architecture comparison illustrating front-end extraction (SuperPoint) and graph matching (SuperGlue).
 * **Slide Content**:
@@ -210,14 +210,14 @@
       * *Cross-Attention*: Dynamically exchanges visual semantics across views, mirroring human saccadic eye movement.
     * Differentiable Optimal Transport: Solves the linear assignment problem via the Sinkhorn algorithm, incorporating an explicit 'dustbin' node for occlusions.
   * **Core Advantage**: Highly robust under extreme day-to-night illumination, motion blur, and low-texture surfaces where classical detectors degrade.
-* **Speaker Delivery Notes (Thanushree)**:
+* **Speaker Delivery Notes (Tanushree)**:
   > "Thank you, Keerthana. In recent years, deep learning has fundamentally shifted the computer vision paradigm. SuperPoint replaces hand-crafted detectors with a single convolutional network that predicts keypoints and descriptors simultaneously. SuperGlue then treats the matching problem as an attentional graph, using self- and cross-attention layers to reason about global context before solving an optimal transport problem via the Sinkhorn algorithm."
 
 ---
 
 #### SLIDE 8: Comparative Matrix &amp; Performance
 * **Slide Number**: 08 / 09
-* **Speaker**: Speaker 3 &middot; Thanushree
+* **Speaker**: Speaker 3 &middot; Tanushree
 * **Topic Track**: Comparative Analysis &middot; Benchmarks
 * **Layout**: Clean Apple Keynote-style high-contrast matrix with 3 clear decision cards underneath.
 * **Slide Content**:
@@ -235,14 +235,14 @@
     * *Resource Constrained (Edge ARM / Microcontrollers)*: Deploy ORB / FAST to maintain $30+ \text{ FPS}$ without thermal throttling.
     * *Photogrammetry Quality (Offline Workstations)*: Deploy SIFT + RANSAC for proven geometric repeatability across survey scales.
     * *Challenging Lighting (Night / Glare / Textureless)*: Deploy SuperPoint + SuperGlue for learned, differentiable feature resilience.
-* **Speaker Delivery Notes (Thanushree)**:
+* **Speaker Delivery Notes (Tanushree)**:
   > "Selecting the appropriate algorithm requires balancing latency, compute budget, and visual complexity. For resource-constrained drones, ORB delivers 30 frames per second at minimal battery consumption. For offline cartography, SIFT remains a gold standard of geometric precision. In adverse conditions—such as autonomous vehicles driving through rain or nighttime glare—learned matchers like SuperGlue represent the state of the art."
 
 ---
 
 #### SLIDE 9: Real-World Applications &amp; Conclusion
 * **Slide Number**: 09 / 09
-* **Speaker**: Speaker 3 &middot; Thanushree
+* **Speaker**: Speaker 3 &middot; Tanushree
 * **Topic Track**: Applications &middot; Synthesis
 * **Layout**: 4-quadrant clean application cards with a prominent executive synthesis block.
 * **Slide Content**:
@@ -258,5 +258,5 @@
     * Anchors interactive virtual holographic content firmly to physical tables and walls via sub-pixel feature tracking and visual relocalization.
   * **Executive Synthesis**:
     * *"Feature matching seamlessly bridges 2D camera pixels to 3D physical spatial comprehension."*
-* **Speaker Delivery Notes (Thanushree) [Closing Cue]**:
+* **Speaker Delivery Notes (Tanushree) [Closing Cue]**:
   > "To conclude, feature matching is the foundational bridge connecting raw two-dimensional camera pixels to three-dimensional physical reality. It powers panoramic photography, enables autonomous vehicles to localize without GPS, generates digital twins through Structure from Motion, and anchors spatial computing experiences. On behalf of Pavan Kumar S, Keerthana, and myself, thank you for your time. We now welcome your questions."
